@@ -132,6 +132,7 @@ int main(void) {
 
     /* Loop */
     while (1) {
+        k_cpu_idle();
         /* Start advertising */
         LOG_INF("Start advertising!!!");
         err = bt_le_adv_start(ADV_PARAM, adv_data, ARRAY_SIZE(adv_data), NULL, 0);
