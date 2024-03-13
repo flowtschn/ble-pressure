@@ -61,6 +61,11 @@ int lis2dh12tr_wait_interrupt(k_timeout_t timeout);
 int start_interrupt_mode(void);
 
 /*!
+ * @brief  Power down.
+ */
+int lis2dh12tr_power_down(void);
+
+/*!
  * @brief  Initialize LIS2DH12TR
  * @param  None
  * @retval 0 if success or error

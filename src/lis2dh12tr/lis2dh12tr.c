@@ -24,7 +24,7 @@ LOG_MODULE_REGISTER(lis2dh12tr, CONFIG_SENSOR_LOG_LEVEL);
 /******************************************************************************/
 
 #define LIS2DH12TR_ADDRESS 0x18
-#define INT1_NODE          DT_ALIAS(sw0)
+#define INT1_NODE          DT_ALIAS(accel_int)
 
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
@@ -32,7 +32,7 @@ LOG_MODULE_REGISTER(lis2dh12tr, CONFIG_SENSOR_LOG_LEVEL);
 
 /* I2C bus */
 static const struct i2c_dt_spec lis2dh12tr_bus = {
-    .bus = DEVICE_DT_GET(DT_NODELABEL(i2c1)),
+    .bus = DEVICE_DT_GET(DT_NODELABEL(i2c0_inst)),
     .addr = LIS2DH12TR_ADDRESS
 };
 
@@ -173,6 +173,16 @@ int start_interrupt_mode(void) {
 int lis2dh12tr_wait_interrupt(k_timeout_t timeout) {
     uint8_t pin;
     return k_msgq_get(&ext_queue, &pin, timeout);
+}
+
+/*!
+ * @brief  Power down.
+ */
+int lis2dh12tr_power_down(void)
+{
+    int ret = lis2dh12_data_rate_set(&dev_ctx, LIS2DH12_POWER_DOWN);
+    if (ret != 0) LOG_ERR("lis2dh12_data_rate_set failed, error = %d", ret);
+    return ret;
 }
 
 /*!

@@ -1,0 +1,2 @@
+osource "c:/users/abdelali/desktop/ble-pressure/boards/shields/*/Kconfig.shield"
+osource "C:/ncs/v2.5.2/nrf/boards/shields/*/Kconfig.shield"

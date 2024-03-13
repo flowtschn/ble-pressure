@@ -49,6 +49,17 @@ LOG_MODULE_REGISTER(MAIN, LOG_LEVEL_INF);
 #define PRES_INDEX              4
 #define TEMP_INDEX              6
 
+static int16_t pressure = 0, temperature = 0;
+static volatile int sleep_counter = 0;
+
+static struct k_timer m_adv_update_timer_id;
+
+void adv_update_timer_timeout(struct k_timer *timer_id)
+{
+    sleep_counter++;
+    LOG_INF("adv_update_timer_timeout sleep_counter %d", sleep_counter);
+}
+
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
@@ -69,8 +80,6 @@ static struct bt_data adv_data[] = {
     BT_DATA(BT_DATA_SVC_DATA16, service_data, ARRAY_SIZE(service_data))
 };
 
-static int16_t pressure = 0, temperature = 0;
-static int sleep_counter = 0;
 
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
@@ -117,8 +126,8 @@ int main(void) {
     }
 
     /* Configure to generate PORT event (wakeup) on buttons press. */
-    nrf_gpio_cfg_input(NRF_DT_GPIOS_TO_PSEL(DT_ALIAS(sw0), gpios), NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_sense_set(NRF_DT_GPIOS_TO_PSEL(DT_ALIAS(sw0), gpios), NRF_GPIO_PIN_SENSE_HIGH);
+    nrf_gpio_cfg_input(NRF_DT_GPIOS_TO_PSEL(DT_ALIAS(accelint), gpios), NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_sense_set(NRF_DT_GPIOS_TO_PSEL(DT_ALIAS(accelint), gpios), NRF_GPIO_PIN_SENSE_HIGH);
 
     /* Initialize the Bluetooth Subsystem */
     err = bt_enable(bt_ready);
@@ -130,21 +139,29 @@ int main(void) {
     /* the sensors */
     tk2700_init();
 
+    k_timer_init(&m_adv_update_timer_id, adv_update_timer_timeout, NULL);
+
+    /* Start advertising */
+    LOG_INF("Start advertising!!!");
+    err = bt_le_adv_start(ADV_PARAM, adv_data, ARRAY_SIZE(adv_data), NULL, 0);
+    if (err) {
+        LOG_ERR("Advertising failed to start (err %d)", err);
+        sys_reboot(SYS_REBOOT_WARM);
+        return 0;
+    }
+
+    k_timer_start(&m_adv_update_timer_id, K_MSEC(1000), K_MSEC(1000));
+
     /* Loop */
     while (1) {
-        /* Start advertising */
-        LOG_INF("Start advertising!!!");
-        err = bt_le_adv_start(ADV_PARAM, adv_data, ARRAY_SIZE(adv_data), NULL, 0);
-        if (err) {
-            LOG_ERR("Advertising failed to start (err %d)", err);
-            sys_reboot(SYS_REBOOT_WARM);
-        }
 
-        sleep_counter = 0;
-        while (sleep_counter <= ADV_INTERVAL_S) {
+        if (sleep_counter <= ADV_INTERVAL_S) 
+        {
             /* Measure and update adv data */
-            if ((sleep_counter % MEASURE_INTERVAL_S) == 0) {
-                if (tk2700_read_results(&pressure, &temperature) == 0) {
+            if ((sleep_counter % MEASURE_INTERVAL_S) == 0) 
+            {
+                if (tk2700_read_results(&pressure, &temperature) == 0) 
+                {
                     if (pressure > MAX_PRESSURE) {
                         pressure = MAX_PRESSURE;
                     }
@@ -160,18 +177,24 @@ int main(void) {
                 }
             }
 
-            sleep_counter++;
-            k_msleep(1000);    /* 1 seconds */
+        } else {
 
-            /* If have interrupt, we reset timeout counter */
-            if (lis2dh12tr_wait_interrupt(K_NO_WAIT) == 0) {
-                sleep_counter = 0;
-                LOG_INF("Sleep after %d seconds", ADV_INTERVAL_S);
-            }
+            LOG_INF("Go to sleep...");
+
+            bt_le_adv_stop();
+            k_timer_stop(&m_adv_update_timer_id);
+            lis2dh12tr_power_down();
+            
+            k_msleep(100);    /* 100ms before sleeping */
+            sys_poweroff();
         }
 
-        LOG_INF("Go to sleep...");
-        k_msleep(100);    /* 100ms before sleeping */
-        sys_poweroff();
+        /* If have interrupt, we reset timeout counter */
+        if (lis2dh12tr_wait_interrupt(K_NO_WAIT) == 0) {
+            sleep_counter = 0;
+            LOG_INF("Sleep after %d seconds", ADV_INTERVAL_S);
+        }
+
+        k_cpu_idle();
     }
 }

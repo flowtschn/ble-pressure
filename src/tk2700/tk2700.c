@@ -33,7 +33,7 @@ LOG_MODULE_REGISTER(tk2700, CONFIG_SENSOR_LOG_LEVEL);
 /******************************************************************************/
 
 static const struct i2c_dt_spec tk2700_bus = {
-    .bus = DEVICE_DT_GET(DT_NODELABEL(i2c1)),
+    .bus = DEVICE_DT_GET(DT_NODELABEL(i2c0_inst)),
     .addr = TK2700_ADDRESS
 };
 
