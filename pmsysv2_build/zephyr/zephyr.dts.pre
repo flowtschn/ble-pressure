@@ -711,7 +711,7 @@
  };
 
  aliases {
-  accelint = &accelint1;
+  accelint=&accelint1;
  };
 
 };

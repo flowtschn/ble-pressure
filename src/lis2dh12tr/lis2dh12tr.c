@@ -24,7 +24,6 @@ LOG_MODULE_REGISTER(lis2dh12tr, CONFIG_SENSOR_LOG_LEVEL);
 /******************************************************************************/
 
 #define LIS2DH12TR_ADDRESS 0x18
-#define INT1_NODE          DT_ALIAS(accel_int)
 
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
@@ -37,7 +36,7 @@ static const struct i2c_dt_spec lis2dh12tr_bus = {
 };
 
 /* Interrupt to wake up */
-static const struct gpio_dt_spec accel_int1 = GPIO_DT_SPEC_GET_OR(INT1_NODE, gpios, {0});
+static const struct gpio_dt_spec accel_int1 = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(accelint1), gpios, 0);
 static struct gpio_callback button_cb_data;
 
 /* Interrupt queue */
