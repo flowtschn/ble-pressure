@@ -184,7 +184,7 @@ int main(void) {
 
             bt_le_adv_stop();
             k_timer_stop(&m_adv_update_timer_id);
-            lis2dh12tr_power_down();
+            //lis2dh12tr_power_down();
             
             k_msleep(100);    /* 100ms before sleeping */
             sys_poweroff();
