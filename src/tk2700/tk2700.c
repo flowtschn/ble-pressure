@@ -15,7 +15,7 @@
 #include <zephyr/logging/log.h>
 #include "tk2700.h"
 
-LOG_MODULE_REGISTER(tk2700, CONFIG_SENSOR_LOG_LEVEL);
+LOG_MODULE_REGISTER(tk2700, 3);
 
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */

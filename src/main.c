@@ -42,6 +42,8 @@ LOG_MODULE_REGISTER(MAIN, LOG_LEVEL_INF);
 #define IDX_TEMPL               4           /* Index of lo byte of temp in service data*/
 #define IDX_TEMPH               5           /* Index of hi byte of temp in service data*/
 
+//BT_GAP_ADV_SLOW_INT_MIN   0x0640 /* 1 s */
+//BT_GAP_ADV_SLOW_INT_MAX   0x0780 /* 1.2 s */
 #define ADV_PARAM BT_LE_ADV_PARAM(BT_LE_ADV_OPT_USE_IDENTITY, \
                   BT_GAP_ADV_SLOW_INT_MIN, \
                   BT_GAP_ADV_SLOW_INT_MAX, NULL)
@@ -184,7 +186,7 @@ int main(void) {
 
             bt_le_adv_stop();
             k_timer_stop(&m_adv_update_timer_id);
-            //lis2dh12tr_power_down();
+            lis2dh12tr_power_down();
             
             k_msleep(100);    /* 100ms before sleeping */
             sys_poweroff();

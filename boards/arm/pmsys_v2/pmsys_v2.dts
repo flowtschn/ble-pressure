@@ -23,7 +23,7 @@
 	};
 
 	aliases {
-		accelint=&accelint1;
+		accelint = &accelint1;
 	};
 
 };
@@ -61,6 +61,10 @@
 	status = "okay";
 };
 
+&gpio1 {
+	status = "okay";
+};
+
 &pinctrl {
 
     i2c_alt_default: i2c_alt_default {
@@ -87,6 +91,13 @@ i2c0_inst: &i2c0 {
 	pinctrl-1 = <&i2c_alt_sleep>;
 	pinctrl-names = "default", "sleep";
     clock-frequency = < I2C_BITRATE_FAST >;
+
+	lis2dh12_accel: lis2dh12-accel@19 {
+		compatible = "st,lis2dh12", "st,lis2dh";
+		reg = <0x19>;
+		irq-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>,
+			  		<&gpio1 13 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 
